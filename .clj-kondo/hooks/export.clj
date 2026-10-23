@@ -33,9 +33,12 @@
                            :col col}))
       (swap! registry update filename (fnil conj #{}) rsym))
 
+    ;; The generated name carries the type keyword's position, so the var's
+    ;; name range is the keyword rather than the whole reify form (which made
+    ;; go-to-definition anywhere inside it jump to the form's start).
     (let [result  (api/list-node
                    (into [(api/token-node (symbol "deftype"))
-                          (api/token-node rsym)
+                          (with-meta (api/token-node rsym) (meta rtype))
                           (api/vector-node [])]
                          other))]
 
