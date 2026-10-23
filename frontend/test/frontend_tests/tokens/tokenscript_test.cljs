@@ -11,6 +11,7 @@
    [app.common.types.tokens-lib :as ctob]
    [app.common.types.tokens-status :as ctos]
    [app.main.data.tokenscript :as ts]
+   [app.main.ui.workspace.tokens.management.forms.controls.utils :as csu]
    [cljs.test :as t :include-macros true]))
 
 (defn- tokens-map
@@ -303,7 +304,7 @@
                 (ctob/add-token (cthi/id :base) (ctob/make-token {:name "double" :value "{size} * 2" :type :sizing}))
                 (ctob/add-token (cthi/id :brand) (ctob/make-token {:name "size" :value "8" :type :sizing}))
                 (ctob/add-token (cthi/id :other) (ctob/make-token {:name "size" :value "16" :type :sizing})))
-        sets (cfo/get-token-sets-for-edit lib (cthi/id :brand) nil)
+        sets (cfo/get-token-sets-for-edit lib (cthi/id :brand))
         values (fn [resolved] (update-vals resolved :resolved-value))]
     (t/testing "the selected set is moved last and wins, as when merged over all tokens"
       (t/is (= [(cthi/id :base) (cthi/id :other) (cthi/id :brand)] (mapv first sets)))
@@ -315,10 +316,12 @@
       (t/is (= 14 (:resolved-value (ts/resolve-draft sets {:name "tmp" :value "{double} - 2" :type :sizing})))
             "each draft replaces the previous one"))
     (t/testing "a renamed token is left out of every set, so references to it break"
-      (let [sets (cfo/get-token-sets-for-edit lib (cthi/id :brand) "size")]
-        (t/is (not-any? #(contains? (second %) "size") sets))
+      (let [sets' (csu/without-token sets "size")]
+        (t/is (not-any? #(contains? (second %) "size") sets'))
         (t/is (= :error.style-dictionary/missing-reference
-                 (get-in (ts/resolve-draft sets {:name "tmp" :value "{size}" :type :sizing}) [:errors 0 :error/code])))))
+                 (get-in (ts/resolve-draft sets' {:name "tmp" :value "{size}" :type :sizing}) [:errors 0 :error/code]))))
+      (t/is (= [false true true] (mapv identical? sets (csu/without-token sets "double")))
+            "sets without the token stay the same objects"))
     (t/testing "typing in a form does not push resolutions out of the cache"
       (let [active (cfo/get-active-token-sets (ctos/make-tokens-status :active-set-ids #{(cthi/id :base)}) lib)
             before (ts/resolve-sets active)]

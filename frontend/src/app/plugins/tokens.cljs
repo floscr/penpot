@@ -165,7 +165,7 @@
   `resolution-tokens` merges, unmerged. Repeated calls with an unchanged
   library are answered from the resolver's cache."
   [tokens-lib set-id]
-  (ts/resolve-sets (cfo/get-token-sets-for-edit tokens-lib set-id nil)))
+  (ts/resolve-sets (cfo/get-token-sets-for-edit tokens-lib set-id)))
 
 (defn valid-token-resolution?
   "Checks that an existing token resolves without errors, which is the only

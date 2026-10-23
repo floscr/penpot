@@ -129,7 +129,7 @@
         (mf/with-memo [tokens-lib tokenscript?]
           (when tokenscript?
             (if tokens-lib
-              (ts/resolve-sets (cfo/get-token-sets-for-edit tokens-lib nil nil))
+              (ts/resolve-sets (cfo/get-token-sets-for-edit tokens-lib nil))
               {})))
 
         ;; A map which keys are token types and values are vectors of tokens of that type, with resolved values.
