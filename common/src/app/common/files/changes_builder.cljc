@@ -260,6 +260,9 @@
                   (contains? options :background-token)
                   (assoc :background-token (:background-token options))
 
+                  (contains? options :token-scope)
+                  (assoc :token-scope (:token-scope options))
+
                   (some? pixel-grid-color)
                   (assoc :pixel-grid-color pixel-grid-color)
 
@@ -275,6 +278,9 @@
 
                   (contains? options :background-token)
                   (assoc :background-token (:background-token page))
+
+                  (contains? options :token-scope)
+                  (assoc :token-scope (:token-scope page))
 
                   (some? pixel-grid-color)
                   (assoc :pixel-grid-color (:pixel-grid-color page))

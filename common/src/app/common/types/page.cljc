@@ -63,6 +63,8 @@
    [:background {:optional true} ctc/schema:hex-color]
    ;; Name of the color token applied to the background, if any.
    [:background-token {:optional true} [:maybe cto/schema:token-name]]
+   ;; Token themes the page resolves with instead of the file's, if any.
+   [:token-scope {:optional true} [:maybe cto/schema:token-scope]]
    ;; Per-page pixel grid color. Falls back to a hardcoded default when
    ;; unset so existing files render identically to before.
    [:pixel-grid-color {:optional true} ctc/schema:hex-color]

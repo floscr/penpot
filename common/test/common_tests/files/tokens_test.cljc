@@ -1709,3 +1709,108 @@
     (t/is (not (contains? (:data detached) :tokens-source)))
     (t/is (not (contains? (:data detached) :tokens-status)))
     (t/is (= detached (ctf/check-file detached)))))
+
+;; Token scopes
+
+(defn- scoped-tokens-lib
+  "Themes Mobile and Desktop in the group Platform, Light and Dark in Mode,
+   each activating the set of its name."
+  []
+  (-> (ctob/make-tokens-lib)
+      (ctob/add-set (ctob/make-token-set :id (thi/new-id! :set-mobile) :name "mobile"))
+      (ctob/add-set (ctob/make-token-set :id (thi/new-id! :set-desktop) :name "desktop"))
+      (ctob/add-set (ctob/make-token-set :id (thi/new-id! :set-light) :name "light"))
+      (ctob/add-set (ctob/make-token-set :id (thi/new-id! :set-dark) :name "dark"))
+      (ctob/add-theme (ctob/make-token-theme :id (thi/new-id! :mobile) :name "Mobile" :group "Platform" :sets #{"mobile"}))
+      (ctob/add-theme (ctob/make-token-theme :id (thi/new-id! :desktop) :name "Desktop" :group "Platform" :sets #{"desktop"}))
+      (ctob/add-theme (ctob/make-token-theme :id (thi/new-id! :light) :name "Light" :group "Mode" :sets #{"light"}))
+      (ctob/add-theme (ctob/make-token-theme :id (thi/new-id! :dark) :name "Dark" :group "Mode" :sets #{"dark"}))))
+
+(defn- mobile-light-status
+  []
+  (ctos/make-tokens-status :active-theme-ids #{(thi/id :mobile) (thi/id :light)}
+                           :active-set-ids #{(thi/id :set-mobile) (thi/id :set-light)}))
+
+(t/deftest test-apply-token-scope
+  (let [tokens-lib    (scoped-tokens-lib)
+        tokens-status (mobile-light-status)]
+    (t/testing "a cascade scope replaces the themes of its groups and keeps the others"
+      (let [status' (cfo/apply-token-scope tokens-status tokens-lib {:themes #{(thi/id :desktop)}})]
+        (t/is (= #{(thi/id :desktop) (thi/id :light)} (ctos/get-active-theme-ids status')))
+        (t/is (= #{(thi/id :set-desktop) (thi/id :set-light)} (ctos/get-active-set-ids status')))))
+
+    (t/testing "an isolated scope activates its themes alone"
+      (let [status' (cfo/apply-token-scope tokens-status tokens-lib {:themes #{(thi/id :desktop)} :mode :isolated})]
+        (t/is (= #{(thi/id :desktop)} (ctos/get-active-theme-ids status')))
+        (t/is (= #{(thi/id :set-desktop)} (ctos/get-active-set-ids status')))))
+
+    (t/testing "a scope without themes changes nothing"
+      (t/is (identical? tokens-status (cfo/apply-token-scope tokens-status tokens-lib {:themes #{}}))))
+
+    (t/testing "a deleted theme is ignored"
+      (t/is (identical? tokens-status (cfo/apply-token-scope tokens-status tokens-lib {:themes #{(uuid/next)}}))))))
+
+(t/deftest test-effective-tokens-status
+  (let [tokens-lib    (scoped-tokens-lib)
+        tokens-status (mobile-light-status)]
+    (t/testing "an empty chain is the file status"
+      (t/is (identical? tokens-status (cfo/effective-tokens-status tokens-status tokens-lib []))))
+
+    (t/testing "the nearest scope wins, the others cascade"
+      (let [status' (cfo/effective-tokens-status tokens-status tokens-lib
+                                                 [{:themes #{(thi/id :dark)}}
+                                                  {:themes #{(thi/id :desktop)}}
+                                                  {:themes #{(thi/id :mobile)}}])]
+        (t/is (= #{(thi/id :mobile) (thi/id :dark)} (ctos/get-active-theme-ids status')))))
+
+    (t/testing "an isolated scope cuts the chain above it"
+      (let [status' (cfo/effective-tokens-status tokens-status tokens-lib
+                                                 [{:themes #{(thi/id :dark)}}
+                                                  {:themes #{(thi/id :desktop)} :mode :isolated}])]
+        (t/is (= #{(thi/id :desktop)} (ctos/get-active-theme-ids status')))))))
+
+(t/deftest test-theme-origin-by-group
+  (let [tokens-lib    (scoped-tokens-lib)
+        tokens-status (mobile-light-status)
+        frame-id      (uuid/next)]
+    (t/testing "the file's themes come from :file"
+      (t/is (= {"Platform" {:theme-id (thi/id :mobile) :origin :file}
+                "Mode"     {:theme-id (thi/id :light) :origin :file}}
+               (cfo/theme-origin-by-group tokens-status tokens-lib []))))
+
+    (t/testing "a scope's theme comes from the scope's origin, the other groups stay"
+      (t/is (= {"Platform" {:theme-id (thi/id :desktop) :origin frame-id}
+                "Mode"     {:theme-id (thi/id :dark) :origin :page}}
+               (cfo/theme-origin-by-group tokens-status tokens-lib
+                                          [{:themes #{(thi/id :dark)} :origin :page}
+                                           {:themes #{(thi/id :desktop)} :origin frame-id}]))))
+
+    (t/testing "an isolated scope leaves its other groups without a theme"
+      (t/is (= {"Platform" {:theme-id (thi/id :desktop) :origin frame-id}}
+               (cfo/theme-origin-by-group tokens-status tokens-lib
+                                          [{:themes #{(thi/id :dark)} :origin :page}
+                                           {:themes #{(thi/id :desktop)} :mode :isolated :origin frame-id}]))))))
+
+(t/deftest test-scope-chain
+  (let [page-scope  {:themes #{(uuid/next)}}
+        frame-scope {:themes #{(uuid/next)} :mode :isolated}
+        frame-id    (uuid/next)
+        group-id    (uuid/next)
+        rect-id     (uuid/next)
+        objects     {uuid/zero {:id uuid/zero :parent-id uuid/zero}
+                     frame-id  {:id frame-id :parent-id uuid/zero :token-scope frame-scope}
+                     group-id  {:id group-id :parent-id frame-id}
+                     rect-id   {:id rect-id :parent-id group-id}}]
+    (t/testing "the page first, then the ancestors that set a scope, each with its origin"
+      (t/is (= [(assoc page-scope :origin :page)
+                (assoc frame-scope :origin frame-id)]
+               (cfo/scope-chain {:token-scope page-scope} objects rect-id))))
+
+    (t/testing "a shape's own scope comes last"
+      (t/is (= [(assoc frame-scope :origin frame-id)]
+               (cfo/scope-chain {} objects frame-id))))
+
+    (t/testing "without a shape it is the page's scope"
+      (t/is (= [(assoc page-scope :origin :page)]
+               (cfo/scope-chain {:token-scope page-scope} objects nil)))
+      (t/is (= [] (cfo/scope-chain {} objects nil))))))

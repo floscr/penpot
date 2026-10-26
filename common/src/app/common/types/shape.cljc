@@ -231,6 +231,7 @@
    [:grow-type {:optional true}
     [::sm/one-of grow-types]]
    [:applied-tokens {:optional true} cto/schema:applied-tokens]
+   [:token-scope {:optional true} cto/schema:token-scope]
    [:plugin-data {:optional true} ctpg/schema:plugin-data]
 
    ;; `rotation`, `flip-x` and `flip-y` are fields of the `Shape` record (see
@@ -514,7 +515,7 @@
     :hidden :masked-group :fills :proportion :proportion-lock :constraints-h
     :constraints-v :fixed-scroll :r1 :r2 :r3 :r4 :rotation :opacity :grids :exports
     :strokes :blend-mode :interactions :shadow :blur :background-blur :grow-type :applied-tokens
-    :plugin-data})
+    :token-scope :plugin-data})
 
 (def ^:private allowed-shape-geom-attrs #{:x :y :width :height})
 (def ^:private allowed-shape-base-attrs #{:id :name :type :selrect :points :transform

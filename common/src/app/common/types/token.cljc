@@ -416,6 +416,14 @@
    schema:text-decoration
    schema:dimensions])
 
+(def schema:token-scope
+  "A theme override on a page or a shape: the ids of the themes it
+   activates, on top of the themes of the scope above it (:cascade, the
+   default) or on none of them (:isolated)."
+  [:map {:title "TokenScope"}
+   [:themes [:set ::sm/uuid]]
+   [:mode {:optional true} [:enum :cascade :isolated]]])
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; HELPERS for conversion between token attrs and shape attrs
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

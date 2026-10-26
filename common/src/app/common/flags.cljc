@@ -144,6 +144,7 @@
     :token-import-from-library
     :token-typography-row
     :token-lib-sync
+    :token-scoped-themes
 
     ;; Only for developtment.
     :transit-readable-response

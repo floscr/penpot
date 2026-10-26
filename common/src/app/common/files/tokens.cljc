@@ -8,6 +8,7 @@
   (:require
    [app.common.data :as d]
    [app.common.data.macros :as dm]
+   [app.common.files.helpers :as cfh]
    [app.common.i18n :refer [tr]]
    [app.common.logging :as log]
    [app.common.schema :as sm]
@@ -636,6 +637,63 @@
   (if active?
     (activate-theme tokens-status tokens-lib id)
     (deactivate-theme tokens-status tokens-lib id)))
+
+;; Token scopes: theme overrides on pages and shapes
+
+(defn apply-token-scope
+  "Fold a token scope (see `cto/schema:token-scope`) onto `tokens-status`.
+   A :cascade scope activates its themes on top of the status, so the
+   groups it does not name stay as they are; an :isolated scope activates
+   them on an empty status instead."
+  [tokens-status tokens-lib {:keys [themes mode]}]
+  (let [base (if (= mode :isolated)
+               (ctos/make-tokens-status)
+               tokens-status)]
+    (reduce #(activate-theme %1 tokens-lib %2) base themes)))
+
+(defn effective-tokens-status
+  "The status a chain of scopes resolves tokens with: `tokens-status`
+   (the file's) with `scopes` folded onto it in order, the outermost
+   first, so the nearest scope wins."
+  [tokens-status tokens-lib scopes]
+  (reduce #(apply-token-scope %1 tokens-lib %2) tokens-status scopes))
+
+(defn theme-origin-by-group
+  "Which theme each theme group ends up with under a chain of scopes and
+   where it was set: a map of group name to `{:theme-id .. :origin ..}`.
+   Themes active in `tokens-status` have the origin :file; a scope's
+   themes the scope's :origin (see `scope-chain`). An :isolated scope
+   drops the origins before it. Groups with no theme active are absent."
+  [tokens-status tokens-lib scopes]
+  (let [set-origin (fn [origins origin id]
+                     (if-let [theme (ctob/get-theme tokens-lib id)]
+                       (assoc origins (:group theme) {:theme-id id :origin origin})
+                       origins))]
+    (reduce (fn [origins {:keys [themes mode origin]}]
+              (reduce #(set-origin %1 origin %2)
+                      (if (= mode :isolated) {} origins)
+                      themes))
+            (reduce #(set-origin %1 :file (:id %2))
+                    {}
+                    (get-active-themes tokens-status tokens-lib))
+            scopes)))
+
+(defn scope-chain
+  "The scopes a shape resolves tokens under, outermost first: the page's,
+   then those of the shape's ancestors down to the shape itself. Each
+   scope carries its :origin, :page or the id of the shape that sets it.
+   Without a shape id it is the page's scope alone."
+  [page objects shape-id]
+  (let [shape  (get objects shape-id)
+        shapes (when shape
+                 (reverse (cons shape (cfh/get-parent-seq objects shape shape-id))))]
+    (into (if-let [scope (:token-scope page)]
+            [(assoc scope :origin :page)]
+            [])
+          (keep (fn [{:keys [id token-scope]}]
+                  (when token-scope
+                    (assoc token-scope :origin id))))
+          shapes)))
 
 (defn get-active-sets
   "Return a clojure set of the active sets, resolved from TokensStatus + TokensLib."
