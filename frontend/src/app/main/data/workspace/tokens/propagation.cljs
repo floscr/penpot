@@ -12,6 +12,7 @@
    [app.common.logging :as l]
    [app.common.time :as ct]
    [app.common.types.token :as ctt]
+   [app.common.types.tokens-status :as ctos]
    [app.config :as cf]
    [app.main.data.changes :as dch]
    [app.main.data.helpers :as dsh]
@@ -97,14 +98,14 @@
   (->> (map (fn [[value attrs]] [attrs {value #{object-id}}]) attrs-values-map)
        (into {})))
 
-(defn- collect-shapes-update-info [resolved-tokens objects]
+(defn- collect-shapes-update-info [resolve-for-shape objects]
   (loop [items (seq objects)
          frame-ids #{}
          text-ids []
          tokens {}]
     (if-let [[shape-id {:keys [applied-tokens] :as shape}] (first items)]
       (let [applied-tokens
-            (-> (invert-collect-key-vals applied-tokens resolved-tokens shape)
+            (-> (invert-collect-key-vals applied-tokens (resolve-for-shape shape-id) shape)
                 (shape-ids-by-values shape-id)
                 (split-attribute-groups))
 
@@ -150,6 +151,31 @@
                       (pcb/with-page page)
                       (pcb/mod-page {:background color})))))))))
 
+(defn- scoped-resolver
+  "A fn from a shape id of `page` (nil for the page itself) to the
+  resolved tokens its token scopes give (see `cfo/scope-chain`):
+  `resolved-tokens` when no scope applies, else the tokens of the chain's
+  effective status, resolved once per distinct combination of active
+  sets. Without the flag every shape gets `resolved-tokens`."
+  [state resolved-tokens page]
+  (if (and (contains? cf/flags :token-scoped-themes)
+           (contains? cf/flags :tokenscript))
+    (let [tokens-lib    (dsh/lookup-tokens-lib state)
+          tokens-status (dsh/lookup-tokens-status state)
+          objects       (:objects page)
+          cache         (volatile! {(ctos/get-active-set-ids tokens-status) resolved-tokens})]
+      (fn [shape-id]
+        (let [chain (cfo/scope-chain page objects shape-id)]
+          (if (empty? chain)
+            resolved-tokens
+            (let [status  (cfo/effective-tokens-status tokens-status tokens-lib chain)
+                  set-ids (ctos/get-active-set-ids status)]
+              (or (get @cache set-ids)
+                  (let [resolved (ts/resolve-sets (cfo/get-active-token-sets status tokens-lib))]
+                    (vswap! cache assoc set-ids resolved)
+                    resolved)))))))
+    (constantly resolved-tokens)))
+
 (defn propagate-tokens
   "Propagate tokens values to all shapes and page backgrounds where they
   are applied"
@@ -169,8 +195,11 @@
             (let [page
                   (dsh/get-page fdata page-id)
 
+                  resolve-for-shape
+                  (scoped-resolver state resolved-tokens page)
+
                   [attrs frame-ids text-ids]
-                  (collect-shapes-update-info resolved-tokens (:objects page))
+                  (collect-shapes-update-info resolve-for-shape (:objects page))
 
                   actions
                   (actionize-shapes-update-info page-id attrs)
@@ -189,7 +218,7 @@
                (when (seq normal) (rx/concat-all (rx/of normal)))
 
                (when (:background-token page)
-                 (rx/of (update-canvas-background page-id resolved-tokens)))
+                 (rx/of (update-canvas-background page-id (resolve-for-shape nil))))
 
                (->> (rx/from frame-ids)
                     (rx/mapcat (fn [frame-id]
