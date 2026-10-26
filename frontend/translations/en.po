@@ -9653,3 +9653,39 @@ msgstr ""
 #: src/app/main/ui/workspace/sidebar/versions.cljs:462
 msgid "workspace.versions.warning.text"
 msgstr "Autosaved versions will be kept for %s days."
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.title"
+msgstr "Token themes"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.inherit"
+msgstr "Inherit from parent"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.reset"
+msgstr "Reset token themes"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.inherited"
+msgstr "Inherited (%s · %s)"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.inherited-none"
+msgstr "Inherited (none)"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.none"
+msgstr "None"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.origin-file"
+msgstr "File"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.origin-page"
+msgstr "Page"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.ungrouped"
+msgstr "Themes"

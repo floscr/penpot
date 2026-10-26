@@ -9757,3 +9757,39 @@ msgstr "Si quieres aumentar este límite, contáctanos en [support@penpot.app](%
 #: src/app/main/ui/workspace/sidebar/versions.cljs:462
 msgid "workspace.versions.warning.text"
 msgstr "Los autoguardados duran %s días."
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.title"
+msgstr "Temas de tokens"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.inherit"
+msgstr "Heredar del padre"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.reset"
+msgstr "Restablecer temas de tokens"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.inherited"
+msgstr "Heredado (%s · %s)"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.inherited-none"
+msgstr "Heredado (ninguno)"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.none"
+msgstr "Ninguno"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.origin-file"
+msgstr "Archivo"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.origin-page"
+msgstr "Página"
+
+#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
+msgid "workspace.options.token-scope.ungrouped"
+msgstr "Temas"
