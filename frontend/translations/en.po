@@ -9701,3 +9701,51 @@ msgstr "No themes"
 #: src/app/main/ui/workspace/viewport/token_scopes.cljs
 msgid "workspace.token-scope-area.remove"
 msgstr "Remove token themes"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.title"
+msgstr "Contexts"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.global"
+msgstr "Global"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.empty"
+msgstr "Right-click a board to add a context"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.inherit"
+msgstr "Inherit from parent"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.group-inherit"
+msgstr "Inherit"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.group-none"
+msgstr "None"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.ungrouped"
+msgstr "Themes"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.remove"
+msgstr "Remove context"
+
+#: src/app/main/ui/workspace/context_menu.cljs
+msgid "workspace.shape.menu.add-token-context"
+msgstr "Add token context"
+
+#: src/app/main/ui/workspace/context_menu.cljs
+msgid "workspace.shape.menu.remove-token-context"
+msgstr "Remove token context"
+
+#: src/app/main/ui/workspace/context_menu.cljs
+msgid "workspace.shape.menu.token-context"
+msgstr "Token context"
+
+#: src/app/main/ui/workspace/context_menu.cljs
+msgid "workspace.shape.menu.token-context.empty"
+msgstr "New empty context"

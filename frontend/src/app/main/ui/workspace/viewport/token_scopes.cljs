@@ -12,7 +12,6 @@
   (:require
    [app.common.data.macros :as dm]
    [app.common.geom.shapes :as gsh]
-   [app.common.types.tokens-lib :as ctob]
    [app.common.uuid :as uuid]
    [app.config :as cf]
    [app.main.data.workspace.tokens.scopes :as dwts]
@@ -22,7 +21,6 @@
    [app.main.ui.hooks :as hooks]
    [app.util.dom :as dom]
    [app.util.i18n :refer [tr]]
-   [cuerdas.core :as str]
    [rumext.v2 :as mf]))
 
 (defn visible?
@@ -35,21 +33,6 @@
        (not (contains? layout :layers))
        (not (contains? layout :assets))
        (not= options-mode :inspect)))
-
-(defn- scope-label
-  "The names of the scope's themes in theme group order, and a mark when
-  the scope is isolated."
-  [tokens-lib {:keys [themes mode]}]
-  (let [themes (keep #(ctob/get-theme tokens-lib %) themes)
-        order  (into {} (map-indexed (fn [i group] [group i])) (ctob/get-theme-groups tokens-lib))
-        names  (->> themes
-                    (sort-by #(get order (:group %) -1))
-                    (map :name)
-                    (str/join " · "))
-        names  (if (str/blank? names) (tr "workspace.token-scope-area.no-themes") names)]
-    (if (= mode :isolated)
-      (tr "workspace.token-scope-area.isolated" names)
-      names)))
 
 ;; Width of a badge's box in screen pixels; the label is cut to it.
 (def ^:private badge-width 400)
@@ -156,4 +139,4 @@
                                 :shape shape
                                 :zoom zoom
                                 :is-selected (contains? selected (:id shape))
-                                :label (scope-label tokens-lib (:token-scope shape))}])])))
+                                :label (dwts/scope-label tokens-lib (:token-scope shape))}])])))

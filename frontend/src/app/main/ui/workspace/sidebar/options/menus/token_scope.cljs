@@ -51,22 +51,6 @@
     :else
     (tr "workspace.options.token-scope.inherited-none")))
 
-(defn- normalize-scope
-  "A cascade scope without themes is no scope."
-  [{:keys [themes mode] :as scope}]
-  (when (or (seq themes) (= mode :isolated))
-    (cond-> scope
-      (not= mode :isolated) (dissoc :mode))))
-
-(defn- set-group-theme
-  "The scope with `theme` as the theme of `group`, or without a theme of
-  that group when `theme` is nil."
-  [scope tokens-lib group theme]
-  (let [in-group? (fn [id] (= group (:group (ctob/get-theme tokens-lib id))))
-        themes    (cond-> (into #{} (remove in-group?) (:themes scope))
-                    theme (conj (:id theme)))]
-    (normalize-scope (assoc scope :themes themes))))
-
 (mf/defc token-scope-menu*
   [{:keys [scope chain-above on-change]}]
   (let [tokens-lib    (mf/deref refs/tokens-lib)
@@ -96,15 +80,15 @@
         (mf/use-fn
          (mf/deps scope on-change)
          (fn [inherit?]
-           (on-change (normalize-scope (assoc scope
-                                              :themes (or (:themes scope) #{})
-                                              :mode (if inherit? :cascade :isolated))))))
+           (on-change (-> (or scope dwts/empty-scope)
+                          (dwts/set-isolated (not inherit?))))))
 
         on-select
         (mf/use-fn
          (mf/deps scope tokens-lib themes-by-option-id on-change)
          (fn [group option-id]
-           (on-change (set-group-theme scope tokens-lib group (get themes-by-option-id option-id)))))
+           (on-change (dwts/set-group-theme (or scope dwts/empty-scope) tokens-lib group
+                                            (:id (get themes-by-option-id option-id))))))
 
         on-reset
         (mf/use-fn

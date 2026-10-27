@@ -9805,3 +9805,51 @@ msgstr "Sin temas"
 #: src/app/main/ui/workspace/viewport/token_scopes.cljs
 msgid "workspace.token-scope-area.remove"
 msgstr "Quitar temas de tokens"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.title"
+msgstr "Contextos"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.global"
+msgstr "Global"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.empty"
+msgstr "Haz clic derecho en un tablero para añadir un contexto"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.inherit"
+msgstr "Heredar del padre"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.group-inherit"
+msgstr "Heredar"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.group-none"
+msgstr "Ninguno"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.ungrouped"
+msgstr "Temas"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.remove"
+msgstr "Quitar contexto"
+
+#: src/app/main/ui/workspace/context_menu.cljs
+msgid "workspace.shape.menu.add-token-context"
+msgstr "Añadir contexto de tokens"
+
+#: src/app/main/ui/workspace/context_menu.cljs
+msgid "workspace.shape.menu.remove-token-context"
+msgstr "Quitar contexto de tokens"
+
+#: src/app/main/ui/workspace/context_menu.cljs
+msgid "workspace.shape.menu.token-context"
+msgstr "Contexto de tokens"
+
+#: src/app/main/ui/workspace/context_menu.cljs
+msgid "workspace.shape.menu.token-context.empty"
+msgstr "Nuevo contexto vacío"

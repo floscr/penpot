@@ -20,6 +20,7 @@
    [app.main.data.style-dictionary :as sd]
    [app.main.data.tokenscript :as ts]
    [app.main.data.workspace :as dw]
+   [app.main.data.workspace.tokens.scopes :as dwts]
    [app.main.features :as features]
    [app.main.refs :as refs]
    [app.main.store :as st]
@@ -43,6 +44,7 @@
    [app.main.ui.workspace.tokens.sidebar :refer [tokens-sidebar-tab*]]
    [app.util.dom :as dom]
    [app.util.i18n :refer [tr]]
+   [okulary.core :as l]
    [rumext.v2 :as mf]))
 
 ;; --- Left Sidebar (Component)
@@ -361,13 +363,36 @@
                                         :on-expand on-expand})]
             [:> options-toolbox* props]))]]]]))
 
+;; Changes only when the token context of the selection does, not on
+;; every edit of the page.
+(def ^:private ref:selection-scope-chain
+  (l/derived dwts/selection-scope-chain st/state =))
+
+(def ^:private no-scope-chain (atom nil))
+
 (mf/defc sidebar*
   [{:keys [layout file file-id page-id section drawing-tool selected]}]
   (let [tokens-lib
         (mf/deref refs/tokens-lib)
 
-        tokens-status
+        ;; The file's themes: what the theme selector and the set
+        ;; checkboxes show and change
+        file-tokens-status
         (mf/deref refs/tokens-status)
+
+        scoped?
+        (contains? cf/flags :token-scoped-themes)
+
+        scope-chain
+        (mf/deref (if scoped? ref:selection-scope-chain no-scope-chain))
+
+        ;; The themes the selection resolves with: the file's, with the
+        ;; token contexts of the selection applied
+        tokens-status
+        (mf/with-memo [file-tokens-status tokens-lib scope-chain]
+          (if (and (seq scope-chain) file-tokens-status tokens-lib)
+            (cfo/effective-tokens-status file-tokens-status tokens-lib scope-chain)
+            file-tokens-status))
 
         active-tokens
         (mf/with-memo [tokens-status tokens-lib]
@@ -408,14 +433,14 @@
         (sd/use-resolved-tokens* (when-not tokenscript? active-tokens-force-set))]
 
     [:> (mf/provider ctx/tokens-lib) {:value tokens-lib}
-     [:> (mf/provider ctx/tokens-status) {:value tokens-status}
+     [:> (mf/provider ctx/tokens-status) {:value file-tokens-status}
       (if (:collapse-left-sidebar layout)
         [:> collapsed-button*]
         [:> left-sidebar* {:layout layout
                            :file file
                            :page-id page-id
                            :tokens-lib tokens-lib
-                           :tokens-status tokens-status
+                           :tokens-status file-tokens-status
                            :active-tokens active-tokens-force-set
                            :resolved-active-tokens (if tokenscript?
                                                      tokenscript-resolved-active-tokens-force-set

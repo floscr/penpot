@@ -4,6 +4,7 @@
 //
 // Copyright (c) KALEIDOS SUBSIDIARY SL
 
+@use "ds/_utils.scss" as *;
 @use "ds/typography.scss" as *;
 @use "refactor/common-refactor.scss" as deprecated;
 
@@ -146,6 +147,14 @@
 
   background-color: var(--in-context-background);
   box-shadow: -100px 0 0 0 var(--in-context-background);
+}
+
+// The selected set's background wins over the tint, so mark it in context
+// with a bar on its leading edge.
+.selected-set.in-context {
+  box-shadow:
+    inset px2rem(3) 0 0 var(--token-scope-color),
+    -100px 0 0 0 var(--layer-row-background-color-selected);
 }
 
 .selected-set {

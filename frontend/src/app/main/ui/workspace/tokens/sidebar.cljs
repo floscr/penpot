@@ -22,6 +22,7 @@
    [app.main.ui.hooks :as h]
    [app.main.ui.hooks.resize :refer [use-resize-hook]]
    [app.main.ui.workspace.sidebar.scroll :as sc]
+   [app.main.ui.workspace.tokens.contexts :refer [contexts-section*]]
    [app.main.ui.workspace.tokens.management :refer [tokens-section*]]
    [app.main.ui.workspace.tokens.sets :as tsets]
    [app.main.ui.workspace.tokens.sets.context-menu :refer [token-set-context-menu*]]
@@ -87,7 +88,10 @@
         (when can-edit-tokens?
           [:> tsetslist/add-button*])]]
 
-      [:> token-sets-list* props]]]))
+      [:> token-sets-list* props]
+
+      (when (contains? cf/flags :token-scoped-themes)
+        [:> contexts-section*])]]))
 
 (mf/defc import-export-button*
   []

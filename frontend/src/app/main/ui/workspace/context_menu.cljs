@@ -16,6 +16,7 @@
    [app.common.types.container :as ctn]
    [app.common.types.page :as ctp]
    [app.common.types.shape.layout :as ctl]
+   [app.common.types.tokens-lib :as ctob]
    [app.config :as cf]
    [app.main.data.event :as ev]
    [app.main.data.modal :as modal]
@@ -29,6 +30,7 @@
    [app.main.data.workspace.shapes :as dwsh]
    [app.main.data.workspace.shortcuts :as sc]
    [app.main.data.workspace.texts :as dwt]
+   [app.main.data.workspace.tokens.scopes :as dwts]
    [app.main.data.workspace.variants :as dwv]
    [app.main.features :as features]
    [app.main.refs :as refs]
@@ -757,6 +759,45 @@
        [:> menu-entry* {:title (tr "workspace.shape.menu.clear-guides")
                         :on-click do-remove-guides}]])))
 
+(mf/defc context-menu-token-scope*
+  {::mf/props :obj
+   ::mf/private true}
+  [{:keys [shapes]}]
+  (let [tokens-lib (deref refs/tokens-lib)
+        holder-ids (into [] (comp (filter dwts/scope-holder?) d/xf:map-id) shapes)
+        with-ids   (into [] (comp (filter :token-scope) d/xf:map-id) shapes)
+
+        update-scopes
+        (fn [f] #(st/emit! (dwts/update-token-scopes holder-ids f)))
+
+        do-remove
+        (mf/use-fn
+         (mf/deps with-ids)
+         #(st/emit! (dwts/remove-token-scopes with-ids)))]
+
+    (when (and (contains? cf/flags :token-scoped-themes)
+               (seq holder-ids)
+               (some? tokens-lib))
+      [:*
+       [:> menu-separator* {}]
+       ;; Picks the themes of the selected boards' contexts, adding the
+       ;; contexts that are missing
+       [:> menu-entry* {:title (if (seq with-ids)
+                                 (tr "workspace.shape.menu.token-context")
+                                 (tr "workspace.shape.menu.add-token-context"))}
+        [:> menu-entry* {:title (tr "workspace.shape.menu.token-context.empty")
+                         :on-click (update-scopes identity)}]
+        (for [[group themes] (ctob/get-theme-tree-no-hidden tokens-lib)
+              [_ theme]      themes]
+          [:> menu-entry* {:key (dm/str (:id theme))
+                           :title (if (seq group)
+                                    (dm/str group " / " (:name theme))
+                                    (:name theme))
+                           :on-click (update-scopes #(dwts/set-group-theme % tokens-lib group (:id theme)))}])]
+       (when (seq with-ids)
+         [:> menu-entry* {:title (tr "workspace.shape.menu.remove-token-context")
+                          :on-click do-remove}])])))
+
 (mf/defc context-menu-delete*
   {::mf/private true}
   []
@@ -801,6 +842,7 @@
        (when is-not-variant-container?
          [:> context-menu-layout* props])
        [:> context-menu-component* props]
+       [:> context-menu-token-scope* props]
        [:> context-menu-guides* props]
        [:> context-menu-delete* props]])))
 
