@@ -871,9 +871,8 @@
        (when (and (not shapes-loading?)
                   (token-scopes/visible? layout options-mode))
          [:> token-scopes/token-scope-areas* {:objects objects-modified
-                                              :page page
-                                              :zoom zoom
-                                              :vbox vbox}])
+                                              :selected selected
+                                              :zoom zoom}])
 
        (when-not shapes-loading?
          [:> widgets/frame-titles*

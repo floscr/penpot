@@ -9803,5 +9803,5 @@ msgid "workspace.token-scope-area.no-themes"
 msgstr "Sin temas"
 
 #: src/app/main/ui/workspace/viewport/token_scopes.cljs
-msgid "workspace.token-scope-area.page"
-msgstr "Página: %s"
+msgid "workspace.token-scope-area.remove"
+msgstr "Quitar temas de tokens"

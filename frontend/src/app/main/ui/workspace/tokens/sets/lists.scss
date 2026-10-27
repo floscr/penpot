@@ -135,6 +135,19 @@
   color: var(--color-foreground-secondary);
 }
 
+// A set active in the token scope of the selection (see the canvas
+// outlines of `viewport/token_scopes`).
+.in-context {
+  --in-context-background: color-mix(
+    in srgb,
+    var(--token-scope-color) var(--token-scope-row-tint, 25%),
+    transparent
+  );
+
+  background-color: var(--in-context-background);
+  box-shadow: -100px 0 0 0 var(--in-context-background);
+}
+
 .selected-set {
   background-color: var(--layer-row-background-color-selected);
   color: var(--layer-row-foreground-color-selected);

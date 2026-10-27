@@ -207,7 +207,7 @@
           :arial-label (tr "workspace.tokens.select-set")}]])]))
 
 (mf/defc sets-tree-set*
-  [{:keys [id set label is-editing is-active is-selected is-draggable is-new path depth index
+  [{:keys [id set label is-editing is-active is-in-context is-selected is-draggable is-new path depth index
            on-select on-toggle on-drop on-start-edition on-reset-edition on-edit-submit]}]
 
   (let [can-edit-tokens?
@@ -290,6 +290,7 @@
            :style {"--tree-depth" depth}
            :class (stl/css-case :set-item-container true
                                 :selected-set is-selected
+                                :in-context   is-in-context
                                 :dnd-over     (= drop-over :center)
                                 :dnd-over-top (= drop-over :top)
                                 :dnd-over-bot (= drop-over :bot))
@@ -321,6 +322,7 @@
            selected
            is-token-set-active
            is-token-set-group-active
+           is-token-set-in-context
            on-start-edition
            on-reset-edition
            on-edit-submit-set
@@ -426,6 +428,8 @@
             :label (peek path)
             :is-editing (= edition-id id)
             :is-active (is-token-set-active id)
+            :is-in-context (and (some? is-token-set-in-context)
+                                (is-token-set-in-context id))
             :is-selected (= selected id)
             :is-draggable is-draggable
             :is-new false
@@ -449,6 +453,7 @@
            on-update-token-set-group
            is-token-set-active
            is-token-set-group-active
+           is-token-set-in-context
            on-create-token-set
            on-toggle-token-set
            on-toggle-token-set-group
@@ -501,6 +506,7 @@
          :on-select on-select
          :is-token-set-active is-token-set-active
          :is-token-set-group-active is-token-set-group-active
+         :is-token-set-in-context is-token-set-in-context
          :on-toggle-set on-toggle-token-set
          :on-toggle-set-group on-toggle-token-set-group
          :on-create-token-set on-create-token-set

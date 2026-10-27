@@ -227,6 +227,17 @@
   --assets-component-border-selected: var(--color-accent-tertiary);
   --assets-component-second-border-selected: var(--color-background-primary);
   --assets-component-hightlight: var(--color-accent-secondary);
+  // Token scopes on the canvas and the sets they activate in the sidebar.
+  // Not an accent: those are the selection and the components.
+  // TODO: a design system color once the design is settled.
+  --token-scope-color: #c61183;
+  --token-scope-stroke-width: 1px;
+  --token-scope-dash: 2;
+  --token-scope-gap: 1;
+  --token-scope-row-tint: 26%;
+  --token-scope-badge-radius: 4px;
+  --token-scope-badge-padding: 5px;
+  --token-scope-badge-text-color: #ffffff;
   --radio-btns-background-color: var(--color-background-tertiary);
   --radio-btn-background-color-selected: var(--color-background-quaternary);
   --radio-btn-foreground-color: var(--color-foreground-secondary);

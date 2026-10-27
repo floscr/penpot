@@ -593,9 +593,8 @@
 
        (when (token-scopes/visible? layout options-mode)
          [:> token-scopes/token-scope-areas* {:objects objects-modified
-                                              :page page
-                                              :zoom zoom
-                                              :vbox vbox}])
+                                              :selected selected
+                                              :zoom zoom}])
 
        [:> widgets/frame-titles*
         {:objects base-objects

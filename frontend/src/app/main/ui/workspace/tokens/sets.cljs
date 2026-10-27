@@ -6,8 +6,10 @@
 
 (ns app.main.ui.workspace.tokens.sets
   (:require
+   [app.common.files.tokens :as cfo]
    [app.common.types.tokens-lib :as ctob]
    [app.common.types.tokens-status :as ctos]
+   [app.config :as cf]
    [app.main.data.workspace.tokens.library-edit :as dwtl]
    [app.main.refs :as refs]
    [app.main.store :as st]
@@ -26,6 +28,21 @@
 (defn- on-toggle-token-set-group-click [path]
   (st/emit! (dwtl/toggle-token-set-group path)))
 
+;; Stands in for the page and selection refs without the flag, so the list
+;; does not re-render on every page change.
+(def ^:private no-ref (atom nil))
+
+(defn- context-set-ids
+  "The ids of the sets active in the token scope of the selection: the
+  selected shape's when one is selected, else the page's. Nil when no
+  scope applies there, since the sets are then the file's."
+  [tokens-status tokens-lib page selected]
+  (let [shape-id (when (= 1 (count selected)) (first selected))
+        chain    (cfo/scope-chain page (:objects page) shape-id)]
+    (when (seq chain)
+      (ctos/get-active-set-ids
+       (cfo/effective-tokens-status tokens-status tokens-lib chain)))))
+
 (mf/defc sets-list*
   [{:keys [selected new-path edition-id]}]
 
@@ -34,6 +51,26 @@
 
         tokens-status
         (mf/use-ctx ctx/tokens-status)
+
+        scoped?
+        (contains? cf/flags :token-scoped-themes)
+
+        page
+        (mf/deref (if scoped? refs/workspace-page no-ref))
+
+        selected-shapes
+        (mf/deref (if scoped? refs/selected-shapes no-ref))
+
+        context-set-ids
+        (mf/with-memo [tokens-status tokens-lib page selected-shapes]
+          (when (and tokens-status tokens-lib page)
+            (context-set-ids tokens-status tokens-lib page selected-shapes)))
+
+        token-set-in-context?
+        (mf/with-memo [context-set-ids]
+          (when context-set-ids
+            (fn [set-id]
+              (contains? context-set-ids set-id))))
 
         token-sets
         (some-> tokens-lib (ctob/get-set-tree))
@@ -74,6 +111,7 @@
 
       :is-token-set-active token-set-active?
       :is-token-set-group-active token-set-group-active?
+      :is-token-set-in-context token-set-in-context?
       :on-select on-select-token-set-click
 
       :selected selected
