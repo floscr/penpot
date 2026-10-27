@@ -68,4 +68,25 @@
 
 .menu-item {
   @extend %dropdown-element-base;
+
+  justify-content: space-between;
+}
+
+.menu-item-label {
+  @include deprecated.text-ellipsis;
+}
+
+.menu-check {
+  flex-shrink: 0;
+  visibility: hidden;
+}
+
+.menu-check-visible {
+  visibility: visible;
+}
+
+.menu-separator {
+  block-size: 0;
+  margin-block: var(--sp-xs);
+  border-block-start: $b-1 solid var(--panel-border-color);
 }

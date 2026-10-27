@@ -7,32 +7,29 @@
 (ns app.main.ui.workspace.viewport.token-scopes
   "Outlines of the token scopes on the canvas: every shape with a
   `:token-scope` gets an outline and a badge with its themes. Clicking a
-  badge opens a menu to remove the scope."
+  badge opens a menu to toggle the themes of the scope or remove it."
   (:require-macros [app.main.style :as stl])
   (:require
    [app.common.data.macros :as dm]
    [app.common.geom.shapes :as gsh]
+   [app.common.types.tokens-lib :as ctob]
    [app.common.uuid :as uuid]
    [app.config :as cf]
    [app.main.data.workspace.tokens.scopes :as dwts]
    [app.main.refs :as refs]
    [app.main.store :as st]
    [app.main.ui.components.dropdown :refer [dropdown]]
+   [app.main.ui.ds.foundations.assets.icon :refer [icon*] :as i]
    [app.main.ui.hooks :as hooks]
    [app.util.dom :as dom]
    [app.util.i18n :refer [tr]]
    [rumext.v2 :as mf]))
 
 (defn visible?
-  "Whether the scope outlines show: with the flag, while the tokens tab of
-  the left sidebar is open. `layout` keeps :tokens when another tab is
-  picked, so the tabs that win over it in the sidebar rule it out here."
-  [layout options-mode]
-  (and (contains? cf/flags :token-scoped-themes)
-       (contains? layout :tokens)
-       (not (contains? layout :layers))
-       (not (contains? layout :assets))
-       (not= options-mode :inspect)))
+  "Whether the scope outlines show: with the flag, whatever the sidebars
+  show."
+  []
+  (contains? cf/flags :token-scoped-themes))
 
 ;; Width of a badge's box in screen pixels; the label is cut to it.
 (def ^:private badge-width 400)
@@ -45,9 +42,11 @@
 
 (mf/defc scope-badge*
   "A badge centered on the canvas point `x`, `y`, at the same size on
-  screen whatever the zoom. Clicking it opens a menu whose only entry
-  calls `on-remove`."
-  [{:keys [x y zoom label on-remove]}]
+  screen whatever the zoom. Clicking it opens a menu with every theme as
+  \"Group / Theme\", checked when it is in `themes`; picking one calls
+  `on-toggle` with it and whether it was checked. The last entry calls
+  `on-remove`."
+  [{:keys [x y zoom label tokens-lib themes on-toggle on-remove]}]
   (let [menu*     (mf/use-state nil)
         menu      (deref menu*)
         container (hooks/use-portal-container :popup)
@@ -76,7 +75,14 @@
          (fn [event]
            (dom/stop-propagation event)
            (reset! menu* nil)
-           (on-remove)))]
+           (on-remove)))
+
+        on-toggle'
+        (fn [theme checked?]
+          (fn [event]
+            (dom/stop-propagation event)
+            (reset! menu* nil)
+            (on-toggle theme checked?)))]
 
     [:g {:transform (dm/fmt "translate(%, %) scale(%)" x y (/ 1 zoom))}
      [:foreignObject {:x (- (/ badge-width 2))
@@ -96,6 +102,20 @@
                 :style {:top (:top menu) :left (:left menu)}}
           [:& dropdown {:show true :on-close on-close}
            [:ul {:class (stl/css :menu) :role "menu"}
+            (for [[_ group-themes] (ctob/get-theme-tree-no-hidden tokens-lib)
+                  [_ theme]        group-themes
+                  :let [checked? (contains? themes (:id theme))]]
+              [:li {:key (dm/str (:id theme))
+                    :class (stl/css :menu-item)
+                    :role "menuitemcheckbox"
+                    :aria-checked checked?
+                    :on-click (on-toggle' theme checked?)}
+               [:span {:class (stl/css :menu-item-label)} (dwts/theme-path theme)]
+               [:> icon* {:icon-id i/tick
+                          :size "s"
+                          :class (stl/css-case :menu-check true
+                                               :menu-check-visible checked?)}]])
+            [:li {:class (stl/css :menu-separator)}]
             [:li {:class (stl/css :menu-item)
                   :role "menuitem"
                   :on-click on-remove'}
@@ -103,9 +123,19 @@
         container))]))
 
 (mf/defc shape-scope-area*
-  [{:keys [shape zoom label is-selected]}]
+  [{:keys [shape zoom label tokens-lib is-selected]}]
   (let [shape-id  (:id shape)
         {:keys [x y width height]} (dm/get-prop shape :selrect)
+
+        on-toggle
+        (mf/use-fn
+         (mf/deps shape-id tokens-lib)
+         (fn [theme checked?]
+           (st/emit! (dwts/update-token-scopes
+                      [shape-id]
+                      #(dwts/set-group-theme % tokens-lib (:group theme)
+                                             (when-not checked? (:id theme)))))))
+
         on-remove (mf/use-fn
                    (mf/deps shape-id)
                    #(st/emit! (dwts/set-shape-token-scope shape-id nil)))]
@@ -119,6 +149,9 @@
                        :y (+ y height (/ (if is-selected badge-gap-selected badge-gap) zoom))
                        :zoom zoom
                        :label label
+                       :tokens-lib tokens-lib
+                       :themes (get-in shape [:token-scope :themes])
+                       :on-toggle on-toggle
                        :on-remove on-remove}]]))
 
 (mf/defc token-scope-areas*
@@ -138,5 +171,6 @@
          [:> shape-scope-area* {:key (dm/str "token-scope-" (:id shape))
                                 :shape shape
                                 :zoom zoom
+                                :tokens-lib tokens-lib
                                 :is-selected (contains? selected (:id shape))
                                 :label (dwts/scope-label tokens-lib (:token-scope shape))}])])))

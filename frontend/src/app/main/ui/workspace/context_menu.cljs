@@ -19,6 +19,7 @@
    [app.common.types.tokens-lib :as ctob]
    [app.config :as cf]
    [app.main.data.event :as ev]
+   [app.main.data.helpers :as dsh]
    [app.main.data.modal :as modal]
    [app.main.data.shortcuts :as scd]
    [app.main.data.workspace :as dw]
@@ -762,6 +763,35 @@
        [:> menu-entry* {:title (tr "workspace.shape.menu.clear-guides")
                         :on-click do-remove-guides}]])))
 
+(mf/defc token-context-entries*
+  "The token context entries of the menu of boards and pages: a submenu
+  with a new context and every theme as \"Group / Theme\", checked when
+  `active?` says so and toggled when picked, and, with a context,
+  `on-remove`. `update-scopes` gets a fn of a scope and applies it,
+  adding the contexts that are missing."
+  {::mf/private true}
+  [{:keys [tokens-lib has-context active? update-scopes on-remove]}]
+  [:*
+   [:> menu-separator* {}]
+   [:> menu-entry* {:title (if has-context
+                             (tr "workspace.shape.menu.token-context")
+                             (tr "workspace.shape.menu.add-token-context"))}
+    [:> menu-entry* {:title (tr "workspace.shape.menu.token-context.new")
+                     :on-click #(update-scopes identity)}]
+    (for [[group themes] (ctob/get-theme-tree-no-hidden tokens-lib)
+          [_ theme]      themes
+          :let [id      (:id theme)
+                checked (active? id)]]
+      [:> menu-entry* {:key (dm/str id)
+                       :title (dwts/theme-path theme)
+                       :is-selected checked
+                       :on-click #(update-scopes (fn [scope]
+                                                   (dwts/set-group-theme scope tokens-lib group
+                                                                         (when-not checked id))))}])]
+   (when has-context
+     [:> menu-entry* {:title (tr "workspace.shape.menu.remove-token-context")
+                      :on-click on-remove}])])
+
 (mf/defc context-menu-token-scope*
   {::mf/props :obj
    ::mf/private true}
@@ -769,42 +799,18 @@
   (let [tokens-lib (deref refs/tokens-lib)
         holders    (filter dwts/scope-holder? shapes)
         holder-ids (into [] d/xf:map-id holders)
-        with-ids   (into [] (comp (filter :token-scope) d/xf:map-id) shapes)
-
-        update-scopes
-        (fn [f] #(st/emit! (dwts/update-token-scopes holder-ids f)))
-
-        do-remove
-        (mf/use-fn
-         (mf/deps with-ids)
-         #(st/emit! (dwts/remove-token-scopes with-ids)))]
+        with-ids   (into [] (comp (filter :token-scope) d/xf:map-id) shapes)]
 
     (when (and (contains? cf/flags :token-scoped-themes)
                (seq holder-ids)
                (some? tokens-lib))
-      [:*
-       [:> menu-separator* {}]
-       ;; Picks the themes of the selected boards' contexts, adding the
-       ;; contexts that are missing
-       [:> menu-entry* {:title (if (seq with-ids)
-                                 (tr "workspace.shape.menu.token-context")
-                                 (tr "workspace.shape.menu.add-token-context"))}
-        [:> menu-entry* {:title (tr "workspace.shape.menu.token-context.new")
-                         :on-click (update-scopes identity)}]
-        ;; A theme every selected board has is checked, and picking it
-        ;; again removes it
-        (for [[group themes] (ctob/get-theme-tree-no-hidden tokens-lib)
-              [_ theme]      themes
-              :let [id      (:id theme)
-                    active? (every? #(contains? (get-in % [:token-scope :themes]) id) holders)]]
-          [:> menu-entry* {:key (dm/str id)
-                           :title (dwts/theme-path theme)
-                           :is-selected active?
-                           :on-click (update-scopes #(dwts/set-group-theme % tokens-lib group
-                                                                           (when-not active? id)))}])]
-       (when (seq with-ids)
-         [:> menu-entry* {:title (tr "workspace.shape.menu.remove-token-context")
-                          :on-click do-remove}])])))
+      ;; A theme is checked when every selected board has it
+      [:> token-context-entries*
+       {:tokens-lib tokens-lib
+        :has-context (seq with-ids)
+        :active? (fn [id] (every? #(contains? (get-in % [:token-scope :themes]) id) holders))
+        :update-scopes #(st/emit! (dwts/update-token-scopes holder-ids %))
+        :on-remove #(st/emit! (dwts/remove-token-scopes with-ids))}])))
 
 (mf/defc context-menu-delete*
   {::mf/private true}
@@ -877,7 +883,12 @@
         do-duplicate #(st/emit!
                        (dw/duplicate-page id)
                        (ev/event {::ev/name "duplicate-page"}))
-        do-rename #(st/emit! (dw/start-rename-page-item id))]
+        do-rename #(st/emit! (dw/start-rename-page-item id))
+
+        tokens-lib (deref refs/tokens-lib)
+        ;; From the file: the menu data holds the sitemap's copy of the
+        ;; page, taken at the right click
+        page-scope (:token-scope (dsh/lookup-page @st/state id))]
 
     (if multi?
       ;; When several pages are selected, the only available action is
@@ -892,7 +903,16 @@
        [:> menu-entry* {:title (tr "workspace.assets.rename")
                         :on-click do-rename}]
        [:> menu-entry* {:title (tr "workspace.assets.duplicate")
-                        :on-click do-duplicate}]])))
+                        :on-click do-duplicate}]
+
+       (when (and (contains? cf/flags :token-scoped-themes)
+                  (some? tokens-lib))
+         [:> token-context-entries*
+          {:tokens-lib tokens-lib
+           :has-context (some? page-scope)
+           :active? #(contains? (:themes page-scope) %)
+           :update-scopes #(st/emit! (dwts/update-page-token-scope id %))
+           :on-remove #(st/emit! (dwts/set-page-token-scope id nil))}])])))
 
 (mf/defc viewport-context-menu*
   []

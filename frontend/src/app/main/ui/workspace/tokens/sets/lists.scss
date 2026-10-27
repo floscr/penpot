@@ -121,6 +121,17 @@
   color: currentcolor;
 }
 
+// The sets of the selection's token context: shown, not changeable
+.checkbox-context {
+  border-color: var(--token-scope-color);
+  cursor: default;
+}
+
+.checkbox-context-checked {
+  background-color: var(--token-scope-color);
+  color: var(--token-scope-badge-text-color, var(--color-static-white));
+}
+
 .set-item-container:hover {
   background-color: var(--layer-row-background-color-hover);
   color: var(--layer-row-foreground-color-hover);

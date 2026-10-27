@@ -591,7 +591,7 @@
            :is-alt @alt?
            :is-shift @shift?}])
 
-       (when (token-scopes/visible? layout options-mode)
+       (when (token-scopes/visible?)
          [:> token-scopes/token-scope-areas* {:objects objects-modified
                                               :selected selected
                                               :zoom zoom}])

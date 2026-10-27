@@ -478,6 +478,20 @@
 (def tokens-status
   (l/derived dsh/lookup-tokens-status st/state))
 
+(def selection-token-scope-chain
+  "The token scopes the selection resolves tokens with (see
+  `cfo/scope-chain`): the selected shape's when one is selected, else the
+  page's. Nil without the `:token-scoped-themes` flag. Changes only when
+  that chain does, not on every edit of the page."
+  (l/derived (fn [state]
+               (when (contains? cf/flags :token-scoped-themes)
+                 (let [page     (dsh/lookup-page state)
+                       selected (dsh/lookup-selected state)
+                       shape-id (when (= 1 (count selected)) (first selected))]
+                   (when page
+                     (not-empty (cfo/scope-chain page (:objects page) shape-id))))))
+             st/state =))
+
 (def workspace-token-theme-groups
   (l/derived (d/nilf ctob/get-theme-groups) tokens-lib))
 

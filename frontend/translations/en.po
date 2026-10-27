@@ -9664,19 +9664,7 @@ msgstr "No themes"
 
 #: src/app/main/ui/workspace/viewport/token_scopes.cljs
 msgid "workspace.token-scope-area.remove"
-msgstr "Remove token themes"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.title"
-msgstr "Contexts"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.empty"
-msgstr "Select a board and press + to add a context"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.remove"
-msgstr "Remove context"
+msgstr "Remove all context overrides"
 
 #: src/app/main/ui/workspace/context_menu.cljs
 msgid "workspace.shape.menu.add-token-context"
@@ -9694,10 +9682,10 @@ msgstr "Token context"
 msgid "workspace.shape.menu.token-context.new"
 msgstr "New context"
 
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.add"
-msgstr "Add context"
-
 #: src/app/main/ui/workspace/tokens/sets/lists.cljs
 msgid "workspace.tokens.contexts.sets-disabled"
 msgstr "Sets of the selected context. Select something outside the contexts to change the file's sets"
+
+#: src/app/main/ui/workspace/tokens/themes/theme_selector.cljs
+msgid "workspace.tokens.contexts.theme-label"
+msgstr "Context: %s"

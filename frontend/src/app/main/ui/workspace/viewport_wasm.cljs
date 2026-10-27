@@ -869,7 +869,7 @@
            :is-shift @shift?}])
 
        (when (and (not shapes-loading?)
-                  (token-scopes/visible? layout options-mode))
+                  (token-scopes/visible?))
          [:> token-scopes/token-scope-areas* {:objects objects-modified
                                               :selected selected
                                               :zoom zoom}])

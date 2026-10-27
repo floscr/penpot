@@ -9768,19 +9768,7 @@ msgstr "Sin temas"
 
 #: src/app/main/ui/workspace/viewport/token_scopes.cljs
 msgid "workspace.token-scope-area.remove"
-msgstr "Quitar temas de tokens"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.title"
-msgstr "Contextos"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.empty"
-msgstr "Selecciona un tablero y pulsa + para añadir un contexto"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.remove"
-msgstr "Quitar contexto"
+msgstr "Quitar todas las anulaciones de contexto"
 
 #: src/app/main/ui/workspace/context_menu.cljs
 msgid "workspace.shape.menu.add-token-context"
@@ -9798,10 +9786,10 @@ msgstr "Contexto de tokens"
 msgid "workspace.shape.menu.token-context.new"
 msgstr "Nuevo contexto"
 
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.add"
-msgstr "Añadir contexto"
-
 #: src/app/main/ui/workspace/tokens/sets/lists.cljs
 msgid "workspace.tokens.contexts.sets-disabled"
 msgstr "Conjuntos del contexto seleccionado. Selecciona algo fuera de los contextos para cambiar los conjuntos del archivo"
+
+#: src/app/main/ui/workspace/tokens/themes/theme_selector.cljs
+msgid "workspace.tokens.contexts.theme-label"
+msgstr "Contexto: %s"

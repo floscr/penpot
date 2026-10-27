@@ -9,15 +9,12 @@
    [app.common.files.tokens :as cfo]
    [app.common.types.tokens-lib :as ctob]
    [app.common.types.tokens-status :as ctos]
-   [app.config :as cf]
    [app.main.data.workspace.tokens.library-edit :as dwtl]
-   [app.main.data.workspace.tokens.scopes :as dwts]
    [app.main.refs :as refs]
    [app.main.store :as st]
    [app.main.ui.context :as ctx]
    [app.main.ui.workspace.tokens.sets.helpers :as sets-helpers]
    [app.main.ui.workspace.tokens.sets.lists :refer [controlled-sets-list*]]
-   [okulary.core :as l]
    [rumext.v2 :as mf]))
 
 (defn- on-select-token-set-click [id]
@@ -30,13 +27,6 @@
 (defn- on-toggle-token-set-group-click [path]
   (st/emit! (dwtl/toggle-token-set-group path)))
 
-;; Changes only when the token context of the selection does
-(def ^:private ref:selection-scope-chain
-  (l/derived dwts/selection-scope-chain st/state =))
-
-;; Stands in for it without the flag
-(def ^:private no-scope-chain (atom nil))
-
 (mf/defc sets-list*
   [{:keys [selected new-path edition-id]}]
 
@@ -46,11 +36,8 @@
         tokens-status
         (mf/use-ctx ctx/tokens-status)
 
-        scoped?
-        (contains? cf/flags :token-scoped-themes)
-
         scope-chain
-        (mf/deref (if scoped? ref:selection-scope-chain no-scope-chain))
+        (mf/deref refs/selection-token-scope-chain)
 
         ;; The status of the selection's context, nil in the global one.
         ;; The checkboxes show its sets, and do not change them: a context

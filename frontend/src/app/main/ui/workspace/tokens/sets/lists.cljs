@@ -61,7 +61,9 @@
       :default-value default-value}]))
 
 (mf/defc checkbox*
-  [{:keys [checked aria-label on-click disabled disabled-title]}]
+  "With `is-context` it shows the sets of the selection's token context,
+  in the context color, and cannot be changed."
+  [{:keys [checked aria-label on-click disabled disabled-title is-context]}]
   (let [all?     (true? checked)
         mixed?   (= checked "mixed")
         checked? (or all? mixed?)]
@@ -72,9 +74,11 @@
            :title (when disabled (or disabled-title (tr "workspace.tokens.no-permisions-set")))
            :tab-index 0
            :class (stl/css-case :checkbox-style true
-                                :checkbox-checked-style checked?
-                                :checkbox-disabled-checked (and checked? disabled)
-                                :checkbox-disabled disabled)
+                                :checkbox-checked-style (and checked? (not is-context))
+                                :checkbox-disabled-checked (and checked? disabled (not is-context))
+                                :checkbox-disabled (and disabled (not is-context))
+                                :checkbox-context is-context
+                                :checkbox-context-checked (and checked? is-context))
            :on-click (when-not disabled on-click)}
 
      (when ^boolean checked?
@@ -202,6 +206,7 @@
          {:on-click on-checkbox-click
           :disabled (or (not can-edit-file?) is-toggle-disabled)
           :disabled-title (when is-toggle-disabled (tr "workspace.tokens.contexts.sets-disabled"))
+          :is-context is-toggle-disabled
           :checked (case is-active
                      :all true
                      :partial "mixed"
@@ -318,6 +323,7 @@
          {:on-click on-checkbox-click
           :disabled (or (not can-edit-file?) is-toggle-disabled)
           :disabled-title (when is-toggle-disabled (tr "workspace.tokens.contexts.sets-disabled"))
+          :is-context is-toggle-disabled
           :arial-label (tr "workspace.tokens.select-set")
           :checked is-active}]])]))
 

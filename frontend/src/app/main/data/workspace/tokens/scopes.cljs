@@ -49,7 +49,7 @@
     (str group " / " name)
     name))
 
-(defn themes-label
+(defn- themes-label
   "The names of `themes` in theme group order, or a placeholder."
   [tokens-lib themes]
   (let [order (into {} (map-indexed (fn [i group] [group i])) (ctob/get-theme-groups tokens-lib))
@@ -69,16 +69,6 @@
       (tr "workspace.token-scope-area.isolated" names)
       names)))
 
-(defn selection-scope-chain
-  "The scopes the selection resolves tokens with (see `cfo/scope-chain`):
-  the selected shape's when one is selected, else the page's."
-  [state]
-  (let [page     (dsh/lookup-page state)
-        selected (dsh/lookup-selected state)
-        shape-id (when (= 1 (count selected)) (first selected))]
-    (when page
-      (cfo/scope-chain page (:objects page) shape-id))))
-
 (defn- with-propagation
   "`event`, which changes scopes, and the propagation of the tokens that
   resolve differently because of it, as a single undo entry: undoing it
@@ -90,18 +80,32 @@
            (dwtp/propagate-workspace-tokens)
            (dwu/commit-undo-transaction undo-id))))
 
-(defn set-page-token-scope
-  "Sets the token scope of the current page, or removes it with nil, and
-  propagates the tokens."
-  [scope]
-  (ptk/reify ::set-page-token-scope
+(defn update-page-token-scope
+  "Sets the token scope of the page `page-id` (the current one with nil)
+  to `f` of it, and propagates. A page without one starts with a copy of
+  the file's themes; `f` giving nil removes it."
+  [page-id f]
+  (ptk/reify ::update-page-token-scope
     ptk/WatchEvent
     (watch [it state _]
-      (let [page    (dsh/lookup-page state)
+      (let [page    (if page-id
+                      (dsh/lookup-page state page-id)
+                      (dsh/lookup-page state))
+            scope   (or (:token-scope page)
+                        (cfo/file-scope (dsh/lookup-tokens-status state)
+                                        (dsh/lookup-tokens-lib state)))
             changes (-> (pcb/empty-changes it)
                         (pcb/with-page page)
-                        (pcb/mod-page {:token-scope scope}))]
+                        (pcb/mod-page {:token-scope (f scope)}))]
         (with-propagation (dch/commit-changes changes))))))
+
+(defn set-page-token-scope
+  "Sets the token scope of the page `page-id` (the current one when not
+  given), or removes it with nil, and propagates."
+  ([scope]
+   (set-page-token-scope nil scope))
+  ([page-id scope]
+   (update-page-token-scope page-id (constantly scope))))
 
 (defn- set-scopes
   "Sets the scopes of the shapes of `ids` to `f` of each shape (removes
@@ -152,45 +156,6 @@
             bases (into {} (map (fn [id] [id (new-scope state id)])) ids)]
         (when (seq ids)
           (set-scopes ids #(f (or (:token-scope %) (get bases (:id %))))))))))
-
-(defn- resolved-scope
-  "A scope with the themes the context `source` resolves with: :page or a
-  shape id."
-  [state source]
-  (let [page   (dsh/lookup-page state)
-        lib    (dsh/lookup-tokens-lib state)
-        chain  (cfo/scope-chain page (:objects page) (when (uuid? source) source))
-        status (cfo/effective-tokens-status (dsh/lookup-tokens-status state) lib chain)]
-    (cfo/file-scope status lib)))
-
-(defn assign-token-scope
-  "Gives the selected shapes that can hold a scope the themes the context
-  `source` (:page or a shape id) resolves with, so they look the same.
-  Propagates."
-  [source]
-  (ptk/reify ::assign-token-scope
-    ptk/WatchEvent
-    (watch [_ state _]
-      (let [ids   (holder-ids state (dsh/lookup-selected state))
-            scope (resolved-scope state source)]
-        (when (seq ids)
-          (set-scopes ids (constantly scope)))))))
-
-(defn add-token-scope
-  "Gives the selected boards that have no scope an empty one, or the page
-  when nothing that can hold a scope is selected."
-  []
-  (ptk/reify ::add-token-scope
-    ptk/WatchEvent
-    (watch [_ state _]
-      (let [ids  (holder-ids state (dsh/lookup-selected state))
-            page (dsh/lookup-page state)]
-        (cond
-          (seq ids)
-          (rx/of (update-token-scopes ids identity))
-
-          (nil? (:token-scope page))
-          (rx/of (set-page-token-scope (new-scope state nil))))))))
 
 (defn remove-token-scopes
   "Removes the scopes of the shapes of `shape-ids` and propagates."

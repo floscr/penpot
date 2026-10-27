@@ -14,6 +14,7 @@
    [app.common.uuid :as uuid]
    [app.main.data.modal :as modal]
    [app.main.data.workspace.tokens.library-edit :as dwtl]
+   [app.main.refs :as refs]
    [app.main.router :as rt]
    [app.main.store :as st]
    [app.main.ui.components.dropdown :refer [dropdown]]
@@ -99,9 +100,17 @@
         can-edit-tokens (mf/use-ctx ctx/can-edit-tokens?)
         team-id         (mf/use-ctx ctx/current-team-id)
 
+        ;; With the selection in a token context, the label shows the
+        ;; context's themes; the options still change the file's
+        scope-chain
+        (mf/deref refs/selection-token-scope-chain)
+
         active-themes
-        (mf/with-memo [tokens-lib tokens-status]
-          (cfo/get-active-themes tokens-status tokens-lib))
+        (mf/with-memo [tokens-lib tokens-status scope-chain]
+          (cfo/get-active-themes (if (seq scope-chain)
+                                   (cfo/effective-tokens-status tokens-status tokens-lib scope-chain)
+                                   tokens-status)
+                                 tokens-lib))
 
         active-themes-count
         (mf/with-memo [active-themes]
@@ -113,6 +122,10 @@
                         (= active-themes-count 1) (-> (first active-themes)
                                                       (ctob/get-theme-path true))
                         :else (tr "workspace.tokens.no-active-theme"))
+
+        current-label (if (seq scope-chain)
+                        (tr "workspace.tokens.contexts.theme-label" current-label)
+                        current-label)
 
         ;; State
         state* (mf/use-state
