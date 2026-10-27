@@ -9689,3 +9689,15 @@ msgstr "Page"
 #: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
 msgid "workspace.options.token-scope.ungrouped"
 msgstr "Themes"
+
+#: src/app/main/ui/workspace/viewport/token_scopes.cljs
+msgid "workspace.token-scope-area.isolated"
+msgstr "%s (isolated)"
+
+#: src/app/main/ui/workspace/viewport/token_scopes.cljs
+msgid "workspace.token-scope-area.no-themes"
+msgstr "No themes"
+
+#: src/app/main/ui/workspace/viewport/token_scopes.cljs
+msgid "workspace.token-scope-area.page"
+msgstr "Page: %s"

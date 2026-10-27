@@ -1,0 +1,42 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at http://mozilla.org/MPL/2.0/.
+//
+// Copyright (c) KALEIDOS SUBSIDIARY SL
+
+@use "ds/_borders.scss" as *;
+@use "ds/colors.scss" as *;
+@use "ds/typography.scss" as t;
+
+.token-scope-areas {
+  --token-scope-color: #{$purple-500};
+
+  pointer-events: none;
+}
+
+.outline {
+  fill: none;
+  stroke: var(--token-scope-color);
+}
+
+.badge-wrapper {
+  overflow: visible;
+}
+
+.badge-wrapper-end {
+  text-align: end;
+}
+
+.badge {
+  @include t.use-typography("body-small");
+
+  display: inline-block;
+  max-inline-size: 100%;
+  padding-inline: var(--sp-xs);
+  border-radius: $br-4;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background-color: var(--token-scope-color);
+  color: var(--color-static-white);
+}
