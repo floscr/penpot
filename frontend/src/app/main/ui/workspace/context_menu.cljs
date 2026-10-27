@@ -145,6 +145,9 @@
             :on-pointer-enter on-pointer-enter
             :on-pointer-leave on-pointer-leave}
        [:span {:class (stl/css :menu-item-title)} title]
+       (when is-selected
+         [:span {:class (stl/css :icon)}
+          [:> icon* {:icon-id i/tick :size "s"}]])
        (when shortcut
          [:span   {:class (stl/css :shortcut)}
           (for [[idx sc] (d/enumerate (scd/split-sc shortcut))]
@@ -764,7 +767,8 @@
    ::mf/private true}
   [{:keys [shapes]}]
   (let [tokens-lib (deref refs/tokens-lib)
-        holder-ids (into [] (comp (filter dwts/scope-holder?) d/xf:map-id) shapes)
+        holders    (filter dwts/scope-holder? shapes)
+        holder-ids (into [] d/xf:map-id holders)
         with-ids   (into [] (comp (filter :token-scope) d/xf:map-id) shapes)
 
         update-scopes
@@ -785,15 +789,19 @@
        [:> menu-entry* {:title (if (seq with-ids)
                                  (tr "workspace.shape.menu.token-context")
                                  (tr "workspace.shape.menu.add-token-context"))}
-        [:> menu-entry* {:title (tr "workspace.shape.menu.token-context.empty")
+        [:> menu-entry* {:title (tr "workspace.shape.menu.token-context.new")
                          :on-click (update-scopes identity)}]
+        ;; A theme every selected board has is checked, and picking it
+        ;; again removes it
         (for [[group themes] (ctob/get-theme-tree-no-hidden tokens-lib)
-              [_ theme]      themes]
-          [:> menu-entry* {:key (dm/str (:id theme))
-                           :title (if (seq group)
-                                    (dm/str group " / " (:name theme))
-                                    (:name theme))
-                           :on-click (update-scopes #(dwts/set-group-theme % tokens-lib group (:id theme)))}])]
+              [_ theme]      themes
+              :let [id      (:id theme)
+                    active? (every? #(contains? (get-in % [:token-scope :themes]) id) holders)]]
+          [:> menu-entry* {:key (dm/str id)
+                           :title (dwts/theme-path theme)
+                           :is-selected active?
+                           :on-click (update-scopes #(dwts/set-group-theme % tokens-lib group
+                                                                           (when-not active? id)))}])]
        (when (seq with-ids)
          [:> menu-entry* {:title (tr "workspace.shape.menu.remove-token-context")
                           :on-click do-remove}])])))

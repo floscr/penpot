@@ -9,7 +9,6 @@
    [app.common.data.macros :as dm]
    [app.common.types.component :as ctk]
    [app.common.types.shape.layout :as ctl]
-   [app.config :as cf]
    [app.main.refs :as refs]
    [app.main.ui.workspace.sidebar.options.menus.blur :refer [blur-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.color-selection :refer [color-selection-menu*]]
@@ -25,7 +24,6 @@
    [app.main.ui.workspace.sidebar.options.menus.measures :refer [select-measure-keys measures-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.shadow :refer [shadow-menu*]]
    [app.main.ui.workspace.sidebar.options.menus.stroke :refer [stroke-attrs stroke-menu*]]
-   [app.main.ui.workspace.sidebar.options.menus.token-scope :refer [shape-token-scope-menu*]]
    [rumext.v2 :as mf]))
 
 (mf/defc options*
@@ -114,9 +112,6 @@
 
      (when is-variant?
        [:> component-variant-main* {:shapes shapes}])
-
-     (when (contains? cf/flags :token-scoped-themes)
-       [:> shape-token-scope-menu* {:shape shape}])
 
      [:> layout-container-menu*
       {:type shape-type

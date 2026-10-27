@@ -1767,29 +1767,32 @@
       (let [status' (cfo/effective-tokens-status tokens-status tokens-lib
                                                  [{:themes #{(thi/id :dark)}}
                                                   {:themes #{(thi/id :desktop)} :mode :isolated}])]
-        (t/is (= #{(thi/id :desktop)} (ctos/get-active-theme-ids status')))))))
+        (t/is (= #{(thi/id :desktop)} (ctos/get-active-theme-ids status')))))
 
-(t/deftest test-theme-origin-by-group
-  (let [tokens-lib    (scoped-tokens-lib)
-        tokens-status (mobile-light-status)
-        frame-id      (uuid/next)]
-    (t/testing "the file's themes come from :file"
-      (t/is (= {"Platform" {:theme-id (thi/id :mobile) :origin :file}
-                "Mode"     {:theme-id (thi/id :light) :origin :file}}
-               (cfo/theme-origin-by-group tokens-status tokens-lib []))))
+    (t/testing "the outermost scope does not inherit the file's themes"
+      (let [status' (cfo/effective-tokens-status tokens-status tokens-lib
+                                                 [{:themes #{(thi/id :desktop)}}])]
+        (t/is (= #{(thi/id :desktop)} (ctos/get-active-theme-ids status')))
+        (t/is (= #{(thi/id :set-desktop)} (ctos/get-active-set-ids status')))))
 
-    (t/testing "a scope's theme comes from the scope's origin, the other groups stay"
-      (t/is (= {"Platform" {:theme-id (thi/id :desktop) :origin frame-id}
-                "Mode"     {:theme-id (thi/id :dark) :origin :page}}
-               (cfo/theme-origin-by-group tokens-status tokens-lib
-                                          [{:themes #{(thi/id :dark)} :origin :page}
-                                           {:themes #{(thi/id :desktop)} :origin frame-id}]))))
+    (t/testing "a nested scope inherits the scopes above it"
+      (let [status' (cfo/effective-tokens-status tokens-status tokens-lib
+                                                 [{:themes #{(thi/id :desktop) (thi/id :dark)}}
+                                                  {:themes #{(thi/id :mobile)}}])]
+        (t/is (= #{(thi/id :mobile) (thi/id :dark)} (ctos/get-active-theme-ids status')))))))
 
-    (t/testing "an isolated scope leaves its other groups without a theme"
-      (t/is (= {"Platform" {:theme-id (thi/id :desktop) :origin frame-id}}
-               (cfo/theme-origin-by-group tokens-status tokens-lib
-                                          [{:themes #{(thi/id :dark)} :origin :page}
-                                           {:themes #{(thi/id :desktop)} :mode :isolated :origin frame-id}]))))))
+(t/deftest test-file-scope
+  (let [tokens-lib (scoped-tokens-lib)]
+    (t/testing "a scope with the file's active themes"
+      (t/is (= {:themes #{(thi/id :mobile) (thi/id :light)}}
+               (cfo/file-scope (mobile-light-status) tokens-lib))))
+
+    (t/testing "without the hidden theme of manually activated sets"
+      (let [tokens-lib (ctob/add-theme tokens-lib (ctob/make-hidden-theme))
+            status     (ctos/make-tokens-status :active-theme-ids #{ctob/hidden-theme-id (thi/id :light)}
+                                                :active-set-ids #{(thi/id :set-light)})]
+        (t/is (= {:themes #{(thi/id :light)}}
+                 (cfo/file-scope status tokens-lib)))))))
 
 (t/deftest test-scope-chain
   (let [page-scope  {:themes #{(uuid/next)}}

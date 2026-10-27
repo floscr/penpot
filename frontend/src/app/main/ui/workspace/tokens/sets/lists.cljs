@@ -61,7 +61,7 @@
       :default-value default-value}]))
 
 (mf/defc checkbox*
-  [{:keys [checked aria-label on-click disabled]}]
+  [{:keys [checked aria-label on-click disabled disabled-title]}]
   (let [all?     (true? checked)
         mixed?   (= checked "mixed")
         checked? (or all? mixed?)]
@@ -69,7 +69,7 @@
     [:div {:role "checkbox"
            :aria-checked (dm/str checked)
            :disabled disabled
-           :title (when disabled (tr "workspace.tokens.no-permisions-set"))
+           :title (when disabled (or disabled-title (tr "workspace.tokens.no-permisions-set")))
            :tab-index 0
            :class (stl/css-case :checkbox-style true
                                 :checkbox-checked-style checked?
@@ -107,7 +107,8 @@
 
 (mf/defc sets-tree-set-group*
   {::mf/private true}
-  [{:keys [id label is-editing is-active is-selected is-draggable is-collapsed path depth index
+  [{:keys [id label is-editing is-active is-selected is-draggable is-collapsed is-toggle-disabled
+           path depth index
            on-toggle on-drop on-start-edition on-reset-edition on-edit-submit on-toggle-collapse]}]
 
   (let [can-edit-tokens?
@@ -199,7 +200,8 @@
          label]
         [:> checkbox*
          {:on-click on-checkbox-click
-          :disabled (not can-edit-file?)
+          :disabled (or (not can-edit-file?) is-toggle-disabled)
+          :disabled-title (when is-toggle-disabled (tr "workspace.tokens.contexts.sets-disabled"))
           :checked (case is-active
                      :all true
                      :partial "mixed"
@@ -207,7 +209,8 @@
           :arial-label (tr "workspace.tokens.select-set")}]])]))
 
 (mf/defc sets-tree-set*
-  [{:keys [id set label is-editing is-active is-in-context is-selected is-draggable is-new path depth index
+  [{:keys [id set label is-editing is-active is-in-context is-toggle-disabled is-selected is-draggable
+           is-new path depth index
            on-select on-toggle on-drop on-start-edition on-reset-edition on-edit-submit]}]
 
   (let [can-edit-tokens?
@@ -313,7 +316,8 @@
          label]
         [:> checkbox*
          {:on-click on-checkbox-click
-          :disabled (not can-edit-file?)
+          :disabled (or (not can-edit-file?) is-toggle-disabled)
+          :disabled-title (when is-toggle-disabled (tr "workspace.tokens.contexts.sets-disabled"))
           :arial-label (tr "workspace.tokens.select-set")
           :checked is-active}]])]))
 
@@ -323,6 +327,7 @@
            is-token-set-active
            is-token-set-group-active
            is-token-set-in-context
+           is-toggle-disabled
            on-start-edition
            on-reset-edition
            on-edit-submit-set
@@ -385,6 +390,7 @@
             :label (peek path)
             :is-editing (= edition-id id)
             :is-active (is-token-set-group-active path)
+            :is-toggle-disabled is-toggle-disabled
             :is-selected false
             :is-draggable is-draggable
             :is-collapsed (collapsed? path)
@@ -430,6 +436,7 @@
             :is-active (is-token-set-active id)
             :is-in-context (and (some? is-token-set-in-context)
                                 (is-token-set-in-context id))
+            :is-toggle-disabled is-toggle-disabled
             :is-selected (= selected id)
             :is-draggable is-draggable
             :is-new false
@@ -454,6 +461,7 @@
            is-token-set-active
            is-token-set-group-active
            is-token-set-in-context
+           is-toggle-disabled
            on-create-token-set
            on-toggle-token-set
            on-toggle-token-set-group
@@ -507,6 +515,7 @@
          :is-token-set-active is-token-set-active
          :is-token-set-group-active is-token-set-group-active
          :is-token-set-in-context is-token-set-in-context
+         :is-toggle-disabled is-toggle-disabled
          :on-toggle-set on-toggle-token-set
          :on-toggle-set-group on-toggle-token-set-group
          :on-create-token-set on-create-token-set

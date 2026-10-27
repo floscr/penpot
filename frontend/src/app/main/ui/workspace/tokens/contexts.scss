@@ -99,13 +99,6 @@
   background-color: var(--menu-background-color);
 }
 
-.menu-group {
-  @include t.use-typography("body-small");
-
-  padding: var(--sp-s) deprecated.$s-6 var(--sp-xs);
-  color: var(--color-foreground-secondary);
-}
-
 .menu-item {
   @include t.use-typography("body-small");
 

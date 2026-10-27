@@ -9758,42 +9758,6 @@ msgstr "Si quieres aumentar este límite, contáctanos en [support@penpot.app](%
 msgid "workspace.versions.warning.text"
 msgstr "Los autoguardados duran %s días."
 
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.title"
-msgstr "Temas de tokens"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.inherit"
-msgstr "Heredar del padre"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.reset"
-msgstr "Restablecer temas de tokens"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.inherited"
-msgstr "Heredado (%s · %s)"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.inherited-none"
-msgstr "Heredado (ninguno)"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.none"
-msgstr "Ninguno"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.origin-file"
-msgstr "Archivo"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.origin-page"
-msgstr "Página"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.ungrouped"
-msgstr "Temas"
-
 #: src/app/main/ui/workspace/viewport/token_scopes.cljs
 msgid "workspace.token-scope-area.isolated"
 msgstr "%s (aislado)"
@@ -9811,28 +9775,8 @@ msgid "workspace.tokens.contexts.title"
 msgstr "Contextos"
 
 #: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.global"
-msgstr "Global"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
 msgid "workspace.tokens.contexts.empty"
-msgstr "Haz clic derecho en un tablero para añadir un contexto"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.inherit"
-msgstr "Heredar del padre"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.group-inherit"
-msgstr "Heredar"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.group-none"
-msgstr "Ninguno"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.ungrouped"
-msgstr "Temas"
+msgstr "Selecciona un tablero y pulsa + para añadir un contexto"
 
 #: src/app/main/ui/workspace/tokens/contexts.cljs
 msgid "workspace.tokens.contexts.remove"
@@ -9851,5 +9795,13 @@ msgid "workspace.shape.menu.token-context"
 msgstr "Contexto de tokens"
 
 #: src/app/main/ui/workspace/context_menu.cljs
-msgid "workspace.shape.menu.token-context.empty"
-msgstr "Nuevo contexto vacío"
+msgid "workspace.shape.menu.token-context.new"
+msgstr "Nuevo contexto"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.add"
+msgstr "Añadir contexto"
+
+#: src/app/main/ui/workspace/tokens/sets/lists.cljs
+msgid "workspace.tokens.contexts.sets-disabled"
+msgstr "Conjuntos del contexto seleccionado. Selecciona algo fuera de los contextos para cambiar los conjuntos del archivo"

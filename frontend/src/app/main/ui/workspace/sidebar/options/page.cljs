@@ -10,14 +10,12 @@
   (:require
    [app.common.data :as d]
    [app.common.types.color :as clr]
-   [app.config :as cf]
    [app.main.data.workspace :as dw]
    [app.main.data.workspace.tokens.application :as dwta]
    [app.main.data.workspace.undo :as dwu]
    [app.main.refs :as refs]
    [app.main.store :as st]
    [app.main.ui.components.title-bar :refer [title-bar*]]
-   [app.main.ui.workspace.sidebar.options.menus.token-scope :refer [page-token-scope-menu*]]
    [app.main.ui.workspace.sidebar.options.rows.color-row :refer [color-row*]]
    [app.util.i18n :as i18n :refer [tr]]
    [okulary.core :as l]
@@ -73,30 +71,27 @@
                      {:color (d/nilv grid-color clr/default-pixel-grid-color)
                       :opacity (d/nilv grid-alpha clr/default-pixel-grid-opacity)})]
 
-    [:* (when (contains? cf/flags :token-scoped-themes)
-          [:> page-token-scope-menu* {}])
+    [:* [:section {:class (stl/css :element-set)
+                   :aria-label (tr "workspace.options.canvas-background-section")}
+         [:div {:class (stl/css :element-title)}
+          [:> title-bar* {:collapsable false
+                          :title       (tr "workspace.options.canvas-background")
+                          :class       (stl/css :title-spacing-page)}]]
+         [:div {:class (stl/css :element-content)}
 
-     [:section {:class (stl/css :element-set)
-                :aria-label (tr "workspace.options.canvas-background-section")}
-      [:div {:class (stl/css :element-title)}
-       [:> title-bar* {:collapsable false
-                       :title       (tr "workspace.options.canvas-background")
-                       :class       (stl/css :title-spacing-page)}]]
-      [:div {:class (stl/css :element-content)}
-
-       [:> color-row*
-        {:disable-gradient true
-         :disable-opacity true
-         :disable-image true
-         :title (tr "workspace.options.canvas-background")
-         :color color
-         :on-change on-change
-         :on-token-change on-token-change
-         :on-detach-token on-detach-token
-         :applied-token background-token
-         :origin :canvas
-         :on-open on-open
-         :on-close on-close}]]]
+          [:> color-row*
+           {:disable-gradient true
+            :disable-opacity true
+            :disable-image true
+            :title (tr "workspace.options.canvas-background")
+            :color color
+            :on-change on-change
+            :on-token-change on-token-change
+            :on-detach-token on-detach-token
+            :applied-token background-token
+            :origin :canvas
+            :on-open on-open
+            :on-close on-close}]]]
 
      [:div {:class (stl/css :element-set)}
       [:div {:class (stl/css :element-title)}

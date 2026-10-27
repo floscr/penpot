@@ -652,31 +652,23 @@
     (reduce #(activate-theme %1 tokens-lib %2) base themes)))
 
 (defn effective-tokens-status
-  "The status a chain of scopes resolves tokens with: `tokens-status`
-   (the file's) with `scopes` folded onto it in order, the outermost
-   first, so the nearest scope wins."
+  "The status a chain of scopes resolves tokens with, the outermost scope
+   first. Without scopes it is `tokens-status`, the file's. The outermost
+   scope does not inherit the file's themes, so changing those leaves the
+   shapes under a scope alone; it starts from an empty status, and every
+   scope below it is folded on top, the nearest winning."
   [tokens-status tokens-lib scopes]
-  (reduce #(apply-token-scope %1 tokens-lib %2) tokens-status scopes))
+  (if (seq scopes)
+    (reduce #(apply-token-scope %1 tokens-lib %2) (ctos/make-tokens-status) scopes)
+    tokens-status))
 
-(defn theme-origin-by-group
-  "Which theme each theme group ends up with under a chain of scopes and
-   where it was set: a map of group name to `{:theme-id .. :origin ..}`.
-   Themes active in `tokens-status` have the origin :file; a scope's
-   themes the scope's :origin (see `scope-chain`). An :isolated scope
-   drops the origins before it. Groups with no theme active are absent."
-  [tokens-status tokens-lib scopes]
-  (let [set-origin (fn [origins origin id]
-                     (if-let [theme (ctob/get-theme tokens-lib id)]
-                       (assoc origins (:group theme) {:theme-id id :origin origin})
-                       origins))]
-    (reduce (fn [origins {:keys [themes mode origin]}]
-              (reduce #(set-origin %1 origin %2)
-                      (if (= mode :isolated) {} origins)
-                      themes))
-            (reduce #(set-origin %1 :file (:id %2))
-                    {}
-                    (get-active-themes tokens-status tokens-lib))
-            scopes)))
+(defn file-scope
+  "A scope with the file's active themes, for a scope that starts as the
+   file's context and changes on its own from then on."
+  [tokens-status tokens-lib]
+  {:themes (into #{}
+                 (comp (remove ctob/hidden-theme?) (map :id))
+                 (get-active-themes tokens-status tokens-lib))})
 
 (defn scope-chain
   "The scopes a shape resolves tokens under, outermost first: the page's,

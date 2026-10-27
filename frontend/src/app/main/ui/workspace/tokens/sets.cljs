@@ -11,11 +11,13 @@
    [app.common.types.tokens-status :as ctos]
    [app.config :as cf]
    [app.main.data.workspace.tokens.library-edit :as dwtl]
+   [app.main.data.workspace.tokens.scopes :as dwts]
    [app.main.refs :as refs]
    [app.main.store :as st]
    [app.main.ui.context :as ctx]
    [app.main.ui.workspace.tokens.sets.helpers :as sets-helpers]
    [app.main.ui.workspace.tokens.sets.lists :refer [controlled-sets-list*]]
+   [okulary.core :as l]
    [rumext.v2 :as mf]))
 
 (defn- on-select-token-set-click [id]
@@ -28,20 +30,12 @@
 (defn- on-toggle-token-set-group-click [path]
   (st/emit! (dwtl/toggle-token-set-group path)))
 
-;; Stands in for the page and selection refs without the flag, so the list
-;; does not re-render on every page change.
-(def ^:private no-ref (atom nil))
+;; Changes only when the token context of the selection does
+(def ^:private ref:selection-scope-chain
+  (l/derived dwts/selection-scope-chain st/state =))
 
-(defn- context-set-ids
-  "The ids of the sets active in the token scope of the selection: the
-  selected shape's when one is selected, else the page's. Nil when no
-  scope applies there, since the sets are then the file's."
-  [tokens-status tokens-lib page selected]
-  (let [shape-id (when (= 1 (count selected)) (first selected))
-        chain    (cfo/scope-chain page (:objects page) shape-id)]
-    (when (seq chain)
-      (ctos/get-active-set-ids
-       (cfo/effective-tokens-status tokens-status tokens-lib chain)))))
+;; Stands in for it without the flag
+(def ^:private no-scope-chain (atom nil))
 
 (mf/defc sets-list*
   [{:keys [selected new-path edition-id]}]
@@ -55,22 +49,22 @@
         scoped?
         (contains? cf/flags :token-scoped-themes)
 
-        page
-        (mf/deref (if scoped? refs/workspace-page no-ref))
+        scope-chain
+        (mf/deref (if scoped? ref:selection-scope-chain no-scope-chain))
 
-        selected-shapes
-        (mf/deref (if scoped? refs/selected-shapes no-ref))
-
-        context-set-ids
-        (mf/with-memo [tokens-status tokens-lib page selected-shapes]
-          (when (and tokens-status tokens-lib page)
-            (context-set-ids tokens-status tokens-lib page selected-shapes)))
+        ;; The status of the selection's context, nil in the global one.
+        ;; The checkboxes show its sets, and do not change them: a context
+        ;; holds themes, not sets.
+        context-status
+        (mf/with-memo [tokens-status tokens-lib scope-chain]
+          (when (and (seq scope-chain) tokens-status tokens-lib)
+            (cfo/effective-tokens-status tokens-status tokens-lib scope-chain)))
 
         token-set-in-context?
-        (mf/with-memo [context-set-ids]
-          (when context-set-ids
+        (mf/with-memo [context-status]
+          (when context-status
             (fn [set-id]
-              (contains? context-set-ids set-id))))
+              (ctos/set-active? context-status set-id))))
 
         token-sets
         (some-> tokens-lib (ctob/get-set-tree))
@@ -80,15 +74,18 @@
 
         token-set-active?
         (mf/use-fn
-         (mf/deps tokens-status)
+         (mf/deps tokens-status context-status)
          (fn [set-id]
-           (ctos/set-active? tokens-status set-id)))
+           (ctos/set-active? (or context-status tokens-status) set-id)))
 
         token-set-group-active?
         (mf/use-fn
+         (mf/deps tokens-lib context-status)
          (fn [group-path]
-           ;; FIXME
-           @(refs/token-sets-at-path-all-active group-path)))
+           (if context-status
+             (cfo/sets-at-path-all-active? context-status tokens-lib group-path)
+             ;; FIXME
+             @(refs/token-sets-at-path-all-active group-path))))
 
         on-reset-edition
         (mf/use-fn
@@ -112,6 +109,7 @@
       :is-token-set-active token-set-active?
       :is-token-set-group-active token-set-group-active?
       :is-token-set-in-context token-set-in-context?
+      :is-toggle-disabled (some? context-status)
       :on-select on-select-token-set-click
 
       :selected selected

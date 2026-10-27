@@ -9654,42 +9654,6 @@ msgstr ""
 msgid "workspace.versions.warning.text"
 msgstr "Autosaved versions will be kept for %s days."
 
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.title"
-msgstr "Token themes"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.inherit"
-msgstr "Inherit from parent"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.reset"
-msgstr "Reset token themes"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.inherited"
-msgstr "Inherited (%s · %s)"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.inherited-none"
-msgstr "Inherited (none)"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.none"
-msgstr "None"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.origin-file"
-msgstr "File"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.origin-page"
-msgstr "Page"
-
-#: src/app/main/ui/workspace/sidebar/options/menus/token_scope.cljs
-msgid "workspace.options.token-scope.ungrouped"
-msgstr "Themes"
-
 #: src/app/main/ui/workspace/viewport/token_scopes.cljs
 msgid "workspace.token-scope-area.isolated"
 msgstr "%s (isolated)"
@@ -9707,28 +9671,8 @@ msgid "workspace.tokens.contexts.title"
 msgstr "Contexts"
 
 #: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.global"
-msgstr "Global"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
 msgid "workspace.tokens.contexts.empty"
-msgstr "Right-click a board to add a context"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.inherit"
-msgstr "Inherit from parent"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.group-inherit"
-msgstr "Inherit"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.group-none"
-msgstr "None"
-
-#: src/app/main/ui/workspace/tokens/contexts.cljs
-msgid "workspace.tokens.contexts.ungrouped"
-msgstr "Themes"
+msgstr "Select a board and press + to add a context"
 
 #: src/app/main/ui/workspace/tokens/contexts.cljs
 msgid "workspace.tokens.contexts.remove"
@@ -9747,5 +9691,13 @@ msgid "workspace.shape.menu.token-context"
 msgstr "Token context"
 
 #: src/app/main/ui/workspace/context_menu.cljs
-msgid "workspace.shape.menu.token-context.empty"
-msgstr "New empty context"
+msgid "workspace.shape.menu.token-context.new"
+msgstr "New context"
+
+#: src/app/main/ui/workspace/tokens/contexts.cljs
+msgid "workspace.tokens.contexts.add"
+msgstr "Add context"
+
+#: src/app/main/ui/workspace/tokens/sets/lists.cljs
+msgid "workspace.tokens.contexts.sets-disabled"
+msgstr "Sets of the selected context. Select something outside the contexts to change the file's sets"
