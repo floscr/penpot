@@ -23,25 +23,38 @@
   [{:keys [:node :filename] :as params}]
   (let [[rnode rtype & other] (:children node)
         rsym (symbol (str "event-type-" (name (:k rtype))))
-        reg  (get @registry filename #{})]
-    (when-not (:namespaced? rtype)
-      (let [{:keys [:row :col]} (meta rtype)]
-        (api/reg-finding! {:message "ptk/reify type should be namespaced"
-                           :type :potok/reify-type
-                           :row row
-                           :col col})))
+        {:keys [:row :col]} (meta rtype)
 
-    (if (contains? reg rsym)
-      (let [{:keys [:row :col]} (meta rtype)]
-        (api/reg-finding! {:message (str "duplicate type: " (name (:k rtype)))
-                           :type :potok/reify-type
-                           :row row
-                           :col col}))
-      (swap! registry update filename (fnil conj #{}) rsym))
+        ;; Hooks run in source order, so a row at or before the last one seen
+        ;; means the file is being analyzed again (clojure-lsp re-lints the
+        ;; file on every edit in the same process, a .cljc runs once per
+        ;; language): start that file's registry over.
+        [old] (swap-vals! registry update filename
+                          (fn [{last-row :row :keys [:types]}]
+                            (let [types (if (and last-row row (< last-row row)) types #{})]
+                              {:row row :types (conj types rsym)})))
+        {last-row :row :keys [:types]} (get old filename)]
+
+    (when-not (:namespaced? rtype)
+      (api/reg-finding! {:message "ptk/reify type should be namespaced"
+                         :type :potok/reify-type
+                         :row row
+                         :col col}))
+
+    (when (and last-row row (< last-row row) (contains? types rsym))
+      (api/reg-finding! {:message (str "duplicate type: " (name (:k rtype)))
+                         :type :potok/reify-type
+                         :row row
+                         :col col}))
 
     (let [result  (api/list-node
                    (into [(api/token-node (symbol "deftype"))
-                          (api/token-node rsym)
+                          ;; The generated name takes the type keyword's
+                          ;; position. Without one it spans the whole reify
+                          ;; form, and clojure-lsp then resolves every
+                          ;; symbol inside the body (go to definition,
+                          ;; hover, ...) to this deftype.
+                          (with-meta (api/token-node rsym) (meta rtype))
                           (api/vector-node [])]
                          other))]
 
