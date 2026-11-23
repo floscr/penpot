@@ -7,17 +7,27 @@
 (ns frontend-tests.tokens.token-warnings-test
   (:require
    [app.main.data.workspace.tokens.warnings :as wtw]
-   [app.util.i18n :refer [tr]]
-   [cljs.test :as t :include-macros true]))
+   [app.util.i18n :as i18n :refer [tr]]
+   [cljs.test :as t :include-macros true]
+   [clojure.string :as str]))
+
+;; The test run loads no translations, so `tr` returns the bare key and
+;; drops its arguments. Tests about the values in a message echo them with
+;; this stub. Both arities, like `tr`.
+(defn- tr-stub
+  ([key] key)
+  ([key & args] (str key "(" (str/join ", " args) ")")))
 
 (t/deftest humanize-warnings
   (t/testing "an out of range opacity shows the resolved value and the allowed range"
-    (t/is (= [(str (tr "workspace.tokens.resolved-value" 1.5) ".\n" (tr "errors.tokens.opacity-range"))]
-             (wtw/humanize-warnings [(wtw/warning-with-value :warning.style-dictionary/invalid-referenced-token-value-opacity 1.5)]))))
+    (with-redefs [i18n/tr tr-stub]
+      (t/is (= [(str (tr "workspace.tokens.resolved-value" 1.5) ".\n" (tr "errors.tokens.opacity-range"))]
+               (wtw/humanize-warnings [(wtw/warning-with-value :warning.style-dictionary/invalid-referenced-token-value-opacity 1.5)])))))
 
   (t/testing "an out of range stroke width shows the resolved value and the allowed range"
-    (t/is (= [(str (tr "workspace.tokens.resolved-value" -2) ".\n" (tr "errors.tokens.stroke-width-range"))]
-             (wtw/humanize-warnings [(wtw/warning-with-value :warning.style-dictionary/invalid-referenced-token-value-stroke-width -2)]))))
+    (with-redefs [i18n/tr tr-stub]
+      (t/is (= [(str (tr "workspace.tokens.resolved-value" -2) ".\n" (tr "errors.tokens.stroke-width-range"))]
+               (wtw/humanize-warnings [(wtw/warning-with-value :warning.style-dictionary/invalid-referenced-token-value-stroke-width -2)])))))
 
   (t/testing "an unknown warning code shows the unknown warning message"
     (t/is (= ["Unknown warning"]
